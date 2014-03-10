@@ -274,6 +274,7 @@ class Live_Rating {
 	public function enqueue_scripts() {
         wp_enqueue_script( 'firebase', '//cdn.firebase.com/js/client/1.0.6/firebase.js', false, null, true );
         wp_enqueue_script( $this->plugin_slug . '-plugin-script', plugins_url( 'assets/js/public.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+        wp_enqueue_script( 'jquery.raty', plugins_url( '../assets/vendor/jquery.raty/jquery.raty.js', __FILE__ ), array( 'jquery' ), '2.5.2', true );
 	}
 
 	/**
@@ -293,7 +294,7 @@ class Live_Rating {
         include_once "includes/FirebaseToken.php";
 
         // TODO: move this to the admin section
-        $secret = "S2CSwB0qWt0QrCqkO9bX5iD52lcuqx1dDiL6ixH1";
+        $secret = "YOUR_FIREBASE_SECRET";
         $tokenGen = new Services_FirebaseTokenGenerator($secret);
         $token = $tokenGen->createToken(array("ip" => "192.168.13.1", "alreadyVoted"=> true));
 

@@ -12,18 +12,19 @@
             }
         });
 
-        var rating= 6;
+        var $starsDiv= $('<div id="star"></div>');
+        $starsDiv.appendTo('body');
+
+        var rating= 2;
         var articleId= 777;
         myRootRef.push({ articleId: articleId, rating: rating });
 
 
         // Add a callback that is triggered for each chat message.
-        myRootRef.limit(10).on('child_added', function (snapshot) {
+        myRootRef.limit(1).on('value', function (snapshot) {
             var message = snapshot.val();
             console.log(message);
-//        $('<div/>').text(message.text).prepend($('<em/>')
-//                .text(message.name+': ')).appendTo($('#messagesDiv'));
-//        $('#messagesDiv')[0].scrollTop = $('#messagesDiv')[0].scrollHeight;
+            $starsDiv.raty({ score: message.rating, path: '/wp-content/plugins/live-rating/assets/vendor/jquery.raty/images/' });
         });
 
 	});
