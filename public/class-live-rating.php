@@ -288,19 +288,33 @@ class Live_Rating {
 	 */
 	public function action_add_token() {
 
-/*
- * This file should provide security against console hackers who might try to vote multiple times a day
- */
+        // FIXME: should provide security against console hackers who might try to vote multiple times a day
+
         include_once "includes/FirebaseToken.php";
 
-        // TODO: move this to the admin section
+        /* TODO: move this to the admin section, store in wp db
+         * If live-rating will be a SAAS then we need to move this to our server & generate new secrets for clients
+         */
         $secret = "YOUR_FIREBASE_SECRET";
+
+        /* TODO: the domain is the blog's unique identifier within the firebase data. We should not use the real domain
+         * because domains change. It should be a hash of the initial domain
+         * It should be authentic in order to avoid collisions (prevent voting for other websites that don't belong to you)
+         * Store in wp db
+         */
+        $domain= 'halloboekarest';
+        $post_id= get_the_ID();
+
+        $ip= md5($_SERVER['REMOTE_ADDR']);
         $tokenGen = new Services_FirebaseTokenGenerator($secret);
-        $token = $tokenGen->createToken(array("ip" => "192.168.13.1", "alreadyVoted"=> true));
+        $voteToken = $tokenGen->createToken(array("domain" => $domain, "ip" => $ip));
 
         echo <<<EOT
 <script type="text/javascript">
-  TOKEN= '$token';
+  TOKEN= '$voteToken';
+  DOMAIN= '$domain';
+  POST_ID= '$post_id';
+  IP= '$ip';
 </script>
 EOT;
 	}

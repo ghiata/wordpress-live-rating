@@ -3,7 +3,8 @@
 
 	$(function () {
 
-        var myRootRef = new Firebase('https://blinding-fire-1205.firebaseio.com/');
+        // TODO: firebase address has to be configured in the wordpress admin
+        var myRootRef = new Firebase('https://live-rating.firebaseio.com/');
         myRootRef.auth(TOKEN, function(error) {
             if(error) {
                 console.log("Login Failed!", error);
@@ -12,19 +13,35 @@
             }
         });
 
+        var ballotBox= myRootRef.child('domains/'+DOMAIN+'/ballot_boxes/'+'post_'+POST_ID);
+        var ballots= ballotBox.child('ballots');
+
         var $starsDiv= $('<div id="star"></div>');
-        $starsDiv.appendTo('body');
+        $starsDiv.prependTo('body');
 
-        var rating= 2;
-        var articleId= 777;
-        myRootRef.push({ articleId: articleId, rating: rating });
+        // Get the last submitted ballot. Correct order/priority is guaranteed by setWithPriority
+        ballots.limit(1).on('value', function (ballotListSnapshot) {
 
+            console.log('triggered value event for ballots, limit 1:', ballotListSnapshot.val());
 
-        // Add a callback that is triggered for each chat message.
-        myRootRef.limit(1).on('value', function (snapshot) {
-            var message = snapshot.val();
-            console.log(message);
-            $starsDiv.raty({ score: message.rating, path: '/wp-content/plugins/live-rating/assets/vendor/jquery.raty/images/' });
+            ballotListSnapshot.forEach(function(ballotSnapshot) {
+                var ballot= ballotSnapshot.val();
+
+                $starsDiv.raty({
+                    score: ballot.sum_votes / ballot.nr_votes,
+                    // FIXME: the path will not work like this on another user's setup.
+                    path: '/wp-content/plugins/live-rating/assets/vendor/jquery.raty/images/',
+                    click: function(value, evt) {
+
+                        var newSumVotes= ballot.sum_votes + value;
+                        var newNrVotes= ballot.nr_votes + 1;
+
+                        // FIXME: relying on the client to update the nr_votes and sum_votes is very, very bad!!!
+                        ballots.child(IP).setWithPriority({value: value, nr_votes: newNrVotes, sum_votes: newSumVotes}, Firebase.ServerValue.TIMESTAMP);
+                    }
+                });
+            });
+
         });
 
 	});
